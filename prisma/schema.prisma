@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ──────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────
+
+// SQLite doesn't support native enums; Prisma emits them as String + validation.
+
+// ──────────────────────────────────────────────
+// Models
+// ──────────────────────────────────────────────
+
+model Crew {
+  id             String   @id @default(cuid())
+  name           String
+  location       String
+  captainName    String
+  captainContact String   // phone or email for the crew captain
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  drops Drop[]
+}
+
+/// A product launch campaign (e.g., "Kodapop Wadiz July 2026").
+/// Stores the Wadiz base URL so the link engine can append UTM params.
+model Campaign {
+  id           String   @id @default(cuid())
+  name         String
+  wadizBaseUrl String   // e.g. "https://www.wadiz.kr/web/campaign/detail/XXXXX"
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  drops Drop[]
+}
+
+/// A physical product drop that bridges one Crew ↔ one Campaign.
+/// The UTM-tagged tracking URL is generated and stored on creation.
+model Drop {
+  id         String     @id @default(cuid())
+  crewId     String
+  campaignId String
+
+  // Logistics
+  status     DropStatus @default(PENDING)
+  quantity   Int        // units dispatched (e.g. cans, boxes)
+  notes      String?
+
+  // Link engine output — stored so QR codes stay stable even if base URL changes
+  utmUrl     String     // full Wadiz URL + UTM query string
+  qrCodePath String?    // relative path to generated QR image (e.g. /qr/drop_id.png)
+
+  dispatchedAt DateTime?
+  deliveredAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  crew     Crew     @relation(fields: [crewId], references: [id])
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+
+  @@index([crewId])
+  @@index([campaignId])
+}
+
+/// Stored as a String in SQLite; enforced at the application layer.
+enum DropStatus {
+  PENDING
+  DISPATCHED
+  DELIVERED
+}
