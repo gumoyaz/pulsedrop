@@ -1,10 +1,11 @@
-import path from 'path'
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaLibSql } from '@prisma/adapter-libsql'
 import { PrismaClient } from '../src/generated/prisma/client'
 import QRCode from 'qrcode'
 
-const dbPath = path.resolve(process.cwd(), 'dev.db')
-const adapter = new PrismaBetterSqlite3({ url: dbPath })
+const adapter = new PrismaLibSql({
+  url: process.env.DATABASE_URL ?? 'file:./dev.db',
+  authToken: process.env.DATABASE_AUTH_TOKEN,
+})
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
