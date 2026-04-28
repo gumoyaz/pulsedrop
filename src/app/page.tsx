@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import CreateDropForm from './dashboard/CreateDropForm'
 import DropStatusControls from './dashboard/DropStatusControls'
+import DropAnalytics from './dashboard/DropAnalytics'
 
 export const dynamic = 'force-dynamic'
 
@@ -180,19 +181,7 @@ export default async function DashboardPage() {
                       <p className="text-xs text-gray-400 italic">{drop.notes}</p>
                     )}
 
-                    {/* Analytics stats — live once GA4 credentials are configured */}
-                    <div className="grid grid-cols-2 gap-2 mt-1">
-                      <div className="bg-gray-50 rounded-lg px-3 py-2 text-center">
-                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Scans</p>
-                        <p className="text-lg font-bold text-gray-900 leading-tight">—</p>
-                        <p className="text-xs text-gray-400">QR scans</p>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg px-3 py-2 text-center">
-                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Conversions</p>
-                        <p className="text-lg font-bold text-gray-900 leading-tight">—</p>
-                        <p className="text-xs text-gray-400">Pre-orders</p>
-                      </div>
-                    </div>
+                    <DropAnalytics dropId={drop.id} />
 
                     {/* UTM URL */}
                     <div className="mt-auto pt-3 border-t border-gray-100">
