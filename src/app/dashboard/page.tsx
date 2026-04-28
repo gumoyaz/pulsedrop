@@ -1,13 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import CreateDropForm from './CreateDropForm'
+import DropStatusControls from './DropStatusControls'
 
 export const dynamic = 'force-dynamic'
-
-const STATUS_STYLE: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  DISPATCHED: 'bg-blue-100 text-blue-800',
-  DELIVERED: 'bg-green-100 text-green-800',
-}
 
 export default async function DashboardPage() {
   const [crews, campaigns, drops] = await Promise.all([
@@ -159,11 +154,19 @@ export default async function DashboardPage() {
 
                   {/* Card Body */}
                   <div className="p-4 flex flex-col gap-2 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`text-xs font-semibold px-2 py-1 rounded-full ${STATUS_STYLE[drop.status] ?? 'bg-gray-100 text-gray-600'}`}
-                      >
-                        {drop.status}
+                    {/* Interactive status controls */}
+                    <DropStatusControls
+                      dropId={drop.id}
+                      currentStatus={drop.status as 'PENDING' | 'DISPATCHED' | 'DELIVERED'}
+                    />
+
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs text-gray-400">
+                        {drop.dispatchedAt
+                          ? `Dispatched ${new Date(drop.dispatchedAt).toLocaleDateString()}`
+                          : drop.status === 'PENDING'
+                          ? 'Not yet dispatched'
+                          : null}
                       </span>
                       <span className="text-xs text-gray-400">
                         {new Date(drop.createdAt).toLocaleDateString()}
@@ -177,6 +180,20 @@ export default async function DashboardPage() {
                     {drop.notes && (
                       <p className="text-xs text-gray-400 italic">{drop.notes}</p>
                     )}
+
+                    {/* ── Analytics stats (live once GA4 credentials are set) ── */}
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <div className="bg-gray-50 rounded-lg px-3 py-2 text-center">
+                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Scans</p>
+                        <p className="text-lg font-bold text-gray-900 leading-tight">—</p>
+                        <p className="text-xs text-gray-400">QR scans</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg px-3 py-2 text-center">
+                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Conversions</p>
+                        <p className="text-lg font-bold text-gray-900 leading-tight">—</p>
+                        <p className="text-xs text-gray-400">Pre-orders</p>
+                      </div>
+                    </div>
 
                     {/* UTM URL */}
                     <div className="mt-auto pt-3 border-t border-gray-100">
