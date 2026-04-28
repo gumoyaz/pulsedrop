@@ -1,18 +1,9 @@
 import { PrismaLibSql } from '@prisma/adapter-libsql'
 import { PrismaClient } from '@/generated/prisma/client'
 
-function resolveDbUrl(): string {
-  const url = process.env.DATABASE_URL ?? 'file:./dev.db'
-  // Remote Turso URL — use as-is
-  if (url.startsWith('libsql://')) return url
-  // Vercel serverless — instrumentation.ts copies dev.db to /tmp at startup
-  if (process.env.VERCEL) return 'file:/tmp/pulsedrop.db'
-  return url
-}
-
 function createPrismaClient() {
   const adapter = new PrismaLibSql({
-    url: resolveDbUrl(),
+    url: process.env.TURSO_URL ?? process.env.DATABASE_URL ?? 'file:./dev.db',
     authToken: process.env.DATABASE_AUTH_TOKEN,
   })
   return new PrismaClient({ adapter })
